@@ -36,6 +36,9 @@ coordinates by leveraging typst's partial function application.
 The main entry-point is `place_nodes()`, which returns a list of indices and a
 list of partially applied `node()` functions, with the pre-calculated positions.
 
+All coordinates here are elastic, as defined in the fletcher manual. Fractional
+coordinates don't work that well, from what I've seen.
+
 == About placers
 
 A placer is a function that takes the index of current child, and the total
@@ -50,6 +53,15 @@ There's also a built-in placer for tree-like structures, `tree_placer()`. See
 #link(label("tree"))[this example]
 
 It's relatively easy to create custom placers if needed. See #link(label("custom"))[here]
+
+== About spread
+
+It appears that fletcher "squeezes" large distances along the left-right axis, as
+long as the coordinates in-between are empty. This is why it's useful to spread
+out the first generation of children, even by a large factor. Their children
+would then occupy the spaces in-between instead of overlapping.
+
+This, however, does not appear to be true for the up-down axis.
 
 = Examples
 
