@@ -1,6 +1,6 @@
 #import "@preview/tidy:0.2.0"
 #import "@preview/fletcher:0.4.3" as fletcher: diagram, node, edge, shapes
-#import "autofletcher.typ": placer, place_nodes, edges, tree_placer, vecadd, vecmult
+#import "autofletcher.typ": placer, place_nodes, edges, tree_placer
 
 #let scope = (
   diagram: diagram,
@@ -11,7 +11,6 @@
   edges: edges,
   tree_placer: tree_placer,
   shapes: shapes,
-  vecadd: vecadd
 )
 
 #let example(code) = {
@@ -22,15 +21,39 @@
   {eval(code.text, mode: "markup", scope: scope)}
 }
 
+#set heading(numbering: "1.1")
+
 #align(center)[#text(2.0em, `autofletcher`)]
 #v(1cm)
 
 This module provides functions to (sort of) abstract away manual placement of
-coordinates.
+coordinates by leveraging typst's partial function application.
 
-Here's a few examples.
+#outline(depth: 3, indent: auto)
 
-=== Flowchart
+= Introduction
+
+The main entry-point is `place_nodes()`, which returns a list of indices and a
+list of partially applied `node()` functions, with the pre-calculated positions.
+
+== About placers
+
+A placer is a function that takes the index of current child, and the total
+number of children, and returns the coordinates for that child relative to the
+parent.
+
+There is a helper function `placer()` which allows easily creating placers from a
+list of positions. This should be good enough for most uses. See
+#link(label("flowchart"))[this example]
+
+There's also a built-in placer for tree-like structures, `tree_placer()`. See
+#link(label("tree"))[this example]
+
+It's relatively easy to create custom placers if needed. See #link(label("custom"))[here]
+
+= Examples
+
+== Flowchart <flowchart>
 
 #example(```typst
 #diagram(
@@ -62,7 +85,7 @@ Here's a few examples.
   })
 ```)
 
-=== Tree diagram
+== Tree diagram <tree>
 
 #example(```typst
 #diagram(
@@ -91,32 +114,39 @@ spacing: (0.0cm, 0.5cm),
 })
 ```)
 
-=== Custom placers
+== Custom placers <custom>
 
 If the built-in placers don't fit your needs, you can create a custom placer;
 that is, a function that calculates the relative positions for each child.
 It should accept, in order:
 + (`int`) the index of the child
 + (`int`) the total number of children
-+ (`int`) the spread
 and it should return a pair of coordinates, `(x, y)`.
-```typst
-#let custom_placer(i, num_total, spread) = {
+
+#example(```typst
+#let custom_placer(i, num_total) = {
   // custom logic here
-  return (0, 1)
+  let x = i - num_total/2
+  let y = calc.min(- x, + x) + 1
+  return (x, y)
 }
 
 #diagram({
   let r = (0, 0)
   node(r, [root])
 
-  let ((ic1, ic2), (c1, c2)) = place_nodes(r, 2, custom_placer)
+  let (idxs, nodes) = place_nodes(r, 7, custom_placer, spread: 1)
+  for (i, ch) in nodes.enumerate() {
+    ch([#i])
+  }
+  edges(r, idxs, "-|>")
 })
-```
+```)
 
 #pagebreak(weak: true)
-== API reference
+= API reference
 
+#set heading(numbering: none)
 #let docs = tidy.parse-module(read("autofletcher.typ"))
 #tidy.show-module(docs, style: tidy.styles.default)
 

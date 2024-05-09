@@ -10,10 +10,12 @@
 /// Calculates the relative position of a child node, like in a tree
 ///
 /// Don't call this directly; instead, pass this as a parameter to `place_nodes`.
-#let tree_placer(i, num_total, spread) = {
+///
+/// - i (int): The index of the child node
+/// - num_total (int): The total number of children
+#let tree_placer(i, num_total) = {
   let idx = i - int((num_total - 1)/2)
-  let rel_vec = (int(idx * spread), 1)
-  return rel_vec
+  return (idx, 1)
 }
 
 /// Returns a generic placer, where children are placed according to the given
@@ -22,14 +24,13 @@
 ///
 /// This is probably sufficient for most use cases.
 ///
-/// - ..placements (coordinates): 
+/// - ..placements (coordinates): Relative positions to assign to children
 /// -> function
 #let placer(..placements) = {
   let tab = placements.pos()
 
-  let discrete_placer(i, num_total, spread) = {
-    let pos = tab.at(calc.rem(i, tab.len()))
-    return vecmultx(pos, spread)
+  let discrete_placer(i, num_total) = {
+    return tab.at(calc.rem(i, tab.len()))
   }
 
   return discrete_placer
@@ -51,7 +52,8 @@
   let coords = ()
   let children = ()
     for i in range(0, num_children) {
-      let rel_vec = placer(i, num_children, spread)
+      let rel_vec = placer(i, num_children)
+      let rel_vec = vecmultx(rel_vec, spread)
       let pos = vecadd(parent, rel_vec)
       coords = coords + (pos, )
       children = children + (node.with(pos),)
