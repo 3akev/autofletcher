@@ -1,6 +1,6 @@
 #import "@preview/tidy:0.2.0"
 #import "@preview/fletcher:0.4.3" as fletcher: diagram, node, edge, shapes
-#import "autofletcher.typ": placer, place_nodes, edges, tree_placer
+#import "autofletcher.typ": placer, place_nodes, edges, tree_placer, circle_placer, arc_placer
 
 #let scope = (
   diagram: diagram,
@@ -10,6 +10,8 @@
   place_nodes: place_nodes,
   edges: edges,
   tree_placer: tree_placer,
+  circle_placer: circle_placer,
+  arc_placer: arc_placer,
   shapes: shapes,
 )
 
@@ -45,12 +47,15 @@ A placer is a function that takes the index of current child, and the total
 number of children, and returns the coordinates for that child relative to the
 parent.
 
-There is a helper function `placer()` which allows easily creating placers from a
-list of positions. This should be good enough for most uses. See
-#link(label("flowchart"))[this example]
+Some built-in placers are provided:
 
-There's also a built-in placer for tree-like structures, `tree_placer()`. See
-#link(label("tree"))[this example]
+- `placer()` which allows easily creating placers from a list of positions.
+  This should be good enough for most uses. See #link(label("flowchart"))[this
+  example]
+- `arc_placer()` and its special instance `circle_placer` are built-in placers
+  for circular structures. See #link(label("arc"))[these examples]
+- `tree_placer`, which places nodes as children in a tree. See
+  #link(label("tree"))[this example]
 
 It's relatively easy to create custom placers if needed. See #link(label("custom"))[here]
 
@@ -126,6 +131,52 @@ spacing: (0.0cm, 0.5cm),
 })
 ```)
 
+== Arc placer <arc>
+
+with `circle_placer`:
+
+#example(```typst
+#diagram(
+spacing: (1.5cm, 1.5cm),
+node-stroke: 1pt,
+{
+  let r = (0, 0)
+
+  let (idxs, nodes) = place_nodes(r, 12, circle_placer)
+
+  for (i, ch) in nodes.enumerate() {
+    ch([#{i + 1}], shape: shapes.circle)
+  }
+
+  edge(idxs.at(0), idxs.at(7), "-|>")
+  edge(idxs.at(3), idxs.at(8), "-|>")
+  edge(idxs.at(4), idxs.at(1), "-|>")
+  edge(idxs.at(10), idxs.at(1), "-|>")
+  edge(idxs.at(6), idxs.at(11), "-|>")
+})
+```)
+
+With `arc_placer`:
+
+#example(```typst
+#diagram(
+spacing: (1.5cm, 1.5cm),
+{
+  let placer = arc_placer(-30deg, length: calc.pi, radius: 1.2)
+  let r = (0, 0)
+  node(r, [root])
+
+  let (idxs, nodes) = place_nodes(r, 5, placer, spread: 1)
+
+  for (i, ch) in nodes.enumerate() {
+    ch([#{i + 1}])
+  }
+
+  edges(r, idxs, "->")
+})
+```)
+
+
 == Custom placers <custom>
 
 If the built-in placers don't fit your needs, you can create a custom placer;
@@ -154,6 +205,7 @@ and it should return a pair of coordinates, `(x, y)`.
   edges(r, idxs, "-|>")
 })
 ```)
+
 
 #pagebreak(weak: true)
 = API reference
