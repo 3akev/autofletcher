@@ -1,19 +1,21 @@
 #import "@preview/tidy:0.2.0"
 #import "@preview/fletcher:0.4.3" as fletcher: diagram, node, edge, shapes
-#import "autofletcher.typ": placer, place_nodes, edges, tree_placer, circle_placer, arc_placer
+#import "@preview/autofletcher:0.1.0": placer, place-nodes, edges, tree-placer, circle-placer, arc-placer
 
 #let scope = (
   diagram: diagram,
   node: node,
   edge: edge,
   placer: placer,
-  place_nodes: place_nodes,
+  place-nodes: place-nodes,
   edges: edges,
-  tree_placer: tree_placer,
-  circle_placer: circle_placer,
-  arc_placer: arc_placer,
+  tree-placer: tree-placer,
+  circle-placer: circle-placer,
+  arc-placer: arc-placer,
   shapes: shapes,
 )
+
+#let version = "0.1.0"
 
 #let example(code) = {
   {
@@ -26,6 +28,8 @@
 #set heading(numbering: "1.1")
 
 #align(center)[#text(2.0em, `autofletcher`)]
+#align(center)[#text(1.0em, [_version #version _])]
+
 #v(1cm)
 
 This module provides functions to (sort of) abstract away manual placement of
@@ -35,7 +39,7 @@ coordinates by leveraging typst's partial function application.
 
 = Introduction
 
-The main entry-point is `place_nodes()`, which returns a list of indices and a
+The main entry-point is `place-nodes()`, which returns a list of indices and a
 list of partially applied `node()` functions, with the pre-calculated positions.
 
 All coordinates here are elastic, as defined in the fletcher manual. Fractional
@@ -52,9 +56,9 @@ Some built-in placers are provided:
 - `placer()` which allows easily creating placers from a list of positions.
   This should be good enough for most uses. See #link(label("flowchart"))[this
   example]
-- `arc_placer()` and its special instance `circle_placer` are built-in placers
+- `arc-placer()` and its special instance `circle-placer` are built-in placers
   for circular structures. See #link(label("arc"))[these examples]
-- `tree_placer`, which places nodes as children in a tree. See
+- `tree-placer`, which places nodes as children in a tree. See
   #link(label("tree"))[this example]
 
 It's relatively easy to create custom placers if needed. See #link(label("custom"))[here]
@@ -70,6 +74,10 @@ This, however, does not appear to be true for the up-down axis.
 
 = Examples
 
+Import the module with:
+
+#raw(lang: "typst", "#import \"@preview/autofletcher:" + version + "\": *")
+
 == Flowchart <flowchart>
 
 #example(```typst
@@ -78,16 +86,16 @@ This, however, does not appear to be true for the up-down axis.
   node-stroke: 1pt,
   {
     let r = (0, 0)
-    let flowchart_placer = placer((0, 1), (1, 0))
+    let flowchart-placer = placer((0, 1), (1, 0))
 
     node(r, [start], shape: shapes.circle)
     // question is a node function with the position pre-applied
-    let ((iquestion, ), (question, )) = place_nodes(r, 1, flowchart_placer, spread: 20)
+    let ((iquestion, ), (question, )) = place-nodes(r, 1, flowchart-placer, spread: 20)
 
     question([Is this true?], shape: shapes.diamond)
     edge(r, iquestion, "-|>")
 
-    let ((iend, ino), (end, no)) = place_nodes(iquestion, 2, flowchart_placer, spread: 10)
+    let ((iend, ino), (end, no)) = place-nodes(iquestion, 2, flowchart-placer, spread: 10)
 
     end([End], shape: shapes.circle)
     no([OK, is this true?], shape: shapes.diamond)
@@ -111,7 +119,7 @@ spacing: (0.0cm, 0.5cm),
   let r = (0, 0)
   node(r, [13])
 
-  let (idxs0, (c1, c2, c3)) = place_nodes(r, 3, tree_placer, spread: 10)
+  let (idxs0, (c1, c2, c3)) = place-nodes(r, 3, tree-placer, spread: 10)
 
   c1([10])
   c2([11])
@@ -120,7 +128,7 @@ spacing: (0.0cm, 0.5cm),
   edges(r, idxs0, "->")
 
   for (i, parent) in idxs0.enumerate() {
-    let (idxs, (c1, c2, c3)) = place_nodes(parent, 3, tree_placer, spread: 2)
+    let (idxs, (c1, c2, c3)) = place-nodes(parent, 3, tree-placer, spread: 2)
 
     c1([#(i * 3 + 1)])
     c2([#(i * 3 + 2)])
@@ -133,7 +141,7 @@ spacing: (0.0cm, 0.5cm),
 
 == Arc placer <arc>
 
-with `circle_placer`:
+with `circle-placer`:
 
 #example(```typst
 #diagram(
@@ -142,7 +150,7 @@ node-stroke: 1pt,
 {
   let r = (0, 0)
 
-  let (idxs, nodes) = place_nodes(r, 12, circle_placer)
+  let (idxs, nodes) = place-nodes(r, 12, circle-placer)
 
   for (i, ch) in nodes.enumerate() {
     ch([#{i + 1}], shape: shapes.circle)
@@ -156,17 +164,17 @@ node-stroke: 1pt,
 })
 ```)
 
-With `arc_placer`:
+With `arc-placer`:
 
 #example(```typst
 #diagram(
 spacing: (1.5cm, 1.5cm),
 {
-  let placer = arc_placer(-30deg, length: calc.pi, radius: 1.2)
+  let placer = arc-placer(-30deg, length: calc.pi, radius: 1.2)
   let r = (0, 0)
   node(r, [root])
 
-  let (idxs, nodes) = place_nodes(r, 5, placer, spread: 1)
+  let (idxs, nodes) = place-nodes(r, 5, placer, spread: 1)
 
   for (i, ch) in nodes.enumerate() {
     ch([#{i + 1}])
@@ -187,9 +195,9 @@ It should accept, in order:
 and it should return a pair of coordinates, `(x, y)`.
 
 #example(```typst
-#let custom_placer(i, num_total) = {
+#let custom-placer(i, num-total) = {
   // custom logic here
-  let x = i - num_total/2
+  let x = i - num-total/2
   let y = calc.min(- x, + x) + 1
   return (x, y)
 }
@@ -198,7 +206,7 @@ and it should return a pair of coordinates, `(x, y)`.
   let r = (0, 0)
   node(r, [root])
 
-  let (idxs, nodes) = place_nodes(r, 7, custom_placer, spread: 1)
+  let (idxs, nodes) = place-nodes(r, 7, custom-placer, spread: 1)
   for (i, ch) in nodes.enumerate() {
     ch([#i])
   }

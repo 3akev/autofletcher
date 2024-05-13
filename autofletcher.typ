@@ -10,12 +10,12 @@
 
 /// Calculates the relative position of a child node, like in a tree
 ///
-/// Don't call this directly; instead, pass this as a parameter to `place_nodes`.
+/// Don't call this directly; instead, pass this as a parameter to `place-nodes`.
 ///
 /// - i (int): The index of the child node
-/// - num_total (int): The total number of children
-#let tree_placer(i, num_total) = {
-  let idx = i - int((num_total - 1)/2)
+/// - num-total (int): The total number of children
+#let tree-placer(i, num-total) = {
+  let idx = i - int((num-total - 1)/2)
   return (idx, 1)
 }
 
@@ -28,7 +28,7 @@
 /// - start (angle, float): The starting angle of the arc
 /// - length (angle, float): The length of the arc
 /// - radius (float): The radius of the circle
-#let arc_placer(start, length: 2*calc.pi, radius: 1) = {
+#let arc-placer(start, length: 2*calc.pi, radius: 1) = {
   if type(start) == angle {
     start = start.rad()
   }
@@ -40,24 +40,24 @@
 
   let r = (radius, radius)
 
-  let circular_placer(i, num_total) = {
+  let circular-placer(i, num-total) = {
     // if it's not a full circle, we subtract one from the total number of
-    // children cuz i is 0-indexed, but num_total is 1-indexed (sort of), so
+    // children cuz i is 0-indexed, but num-total is 1-indexed (sort of), so
     // that leaves the last "slot" unused. this is useful when it's a full
     // circle, but not when it's an arc
-    if length != 2*calc.pi and num_total > 1 {
-      num_total = num_total - 1
+    if length != 2*calc.pi and num-total > 1 {
+      num-total = num-total - 1
     }
-    let angle = start + length * i / num_total
+    let angle = start + length * i / num-total
     let vec = (calc.cos(angle), calc.sin(angle))
     return vecmult(r, vec)
   }
 
-  return circular_placer
+  return circular-placer
 }
 
 /// A pre-defined arc placer that places children in a full circle.
-#let circle_placer = arc_placer(0, length: 2 * calc.pi)
+#let circle-placer = arc-placer(0, length: 2 * calc.pi)
 
 /// Returns a generic placer, where children are placed according to the given
 /// relative positions. If more children are present than there are positions, positions
@@ -70,32 +70,32 @@
 #let placer(..placements) = {
   let tab = placements.pos()
 
-  let discrete_placer(i, num_total) = {
+  let discrete-placer(i, num-total) = {
     return tab.at(calc.rem(i, tab.len()))
   }
 
-  return discrete_placer
+  return discrete-placer
 }
 
-/// Calculates the positions of `num_children` children of `parent` node.
+/// Calculates the positions of `num-children` children of `parent` node.
 ///
 /// Returns a pair of arrays. The first array contains the coordinates of the
 /// children, and the second array contains the nodes partially applied with
 /// the calculated positions.
 ///
 /// - parent (coordinates): The coordinates of the parent node
-/// - num_children (int): The number of children to place
+/// - num-children (int): The number of children to place
 /// - placer (function): The function to calculate the relative positions of the children
 /// - spread (int): A multiplier for the x coordinate, "spreads" 
 ///               children out. Increase this for high parent nodes.
 /// -> (array of coordinates + array of nodes)
-#let place_nodes(parent, num_children, placer, spread: 1) =  {
+#let place-nodes(parent, num-children, placer, spread: 1) =  {
   let coords = ()
   let children = ()
-    for i in range(0, num_children) {
-      let rel_vec = placer(i, num_children)
-      let rel_vec = vecmultx(rel_vec, spread)
-      let pos = vecadd(parent, rel_vec)
+    for i in range(0, num-children) {
+      let rel-vec = placer(i, num-children)
+      let rel-vec = vecmultx(rel-vec, spread)
+      let pos = vecadd(parent, rel-vec)
       coords = coords + (pos, )
       children = children + (node.with(pos),)
     }
