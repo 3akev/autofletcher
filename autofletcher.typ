@@ -1,4 +1,4 @@
-#import "@preview/fletcher:0.4.3" as fletcher: diagram, node, edge
+#import "@preview/fletcher:0.4.5" as fletcher: diagram, node, edge
 
 
 // math helpers
